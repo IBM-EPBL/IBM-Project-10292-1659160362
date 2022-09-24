@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+* {
+    font-family: 'Poppins', sans-serif;
+}
+.page_head {
+    background-color: black;
+}
+.bg-nav {
+    background-color: black;
+}
+.sub-heading{
+    font-size: 36px;
+    font-weight: 400;
+    margin-top: 30px;
+}
+.home {
+    font-weight: 500;
+    margin-top: 100px;
+    font-size: 60px;
+}
+.link,
+.link:focus,
+.link:hover{
+    color:black;
+}
