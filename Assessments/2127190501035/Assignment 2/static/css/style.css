@@ -1,0 +1,22 @@
+* {
+  background: rgb(230, 232, 237);
+}
+.body-full {
+  background: rgb(229, 231, 234);
+}
+.page_head {
+  background: #98ef27;
+}
+#bg-nav {
+  background: #98ef27;
+  padding: 20px;
+}
+.home {
+  font-size: 60px;
+}
+.whole {
+  padding: 20px;
+}
+.home-body {
+  margin-top: 20px;
+}
