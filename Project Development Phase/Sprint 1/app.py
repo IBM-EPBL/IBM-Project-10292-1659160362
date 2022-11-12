@@ -111,7 +111,16 @@ def signup():
 @app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashBoard():
-    return render_template("dashboard.html")
+    headings = ("id", "name", "order_id", "location")
+    data = (
+        ("1", "lorem", "ipsum", "dolor"),
+        ("2", "lorem", "ipsum", "dolor"),
+        ("3", "lorem", "ipsum", "dolor"),
+        ("1", "lorem", "ipsum", "dolor"),
+        ("2", "lorem", "ipsum", "dolor"),
+        ("3", "lorem", "ipsum", "dolor"),
+    )
+    return render_template("dashboard.html", headings=headings, data=data)
 
 
 @app.route('/orders', methods=['POST', 'GET'])
