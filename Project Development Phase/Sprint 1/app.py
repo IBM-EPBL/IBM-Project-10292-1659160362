@@ -1,12 +1,27 @@
 from __future__ import print_function
 from flask import Flask, render_template, url_for, request, redirect, session, make_response
 import sqlite3 as sql
+from functools import wraps
 import re
 import ibm_db
 conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=815fa4db-dc03-4c70-869a-a9cc13f33084.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;PORT=30367;SECURITY=SSL;SSLServerCertificate=DigiCertGlobalRootCA.crt;UID=gkx49901;PWD=kvWCsySl7vApfsy2", '', '')
 
 app = Flask(__name__)
 app.secret_key = 'jackiechan'
+
+
+def rewrite(url):
+    view_func, view_args = app.create_url_adapter(request).match(url)
+    return app.view_functions[view_func](**view_args)
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "id" not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/')
@@ -42,12 +57,12 @@ def login():
         print(account)
         if account:
             session['loggedin'] = True
-            session['id'] = account['USERNAME']
-            userid = account['USERNAME']
+            session['id'] = account['EMAIL']
+            userid = account['EMAIL']
             session['username'] = account['USERNAME']
             msg = 'Logged in successfully !'
 
-            return render_template('dashboardContent.html', msg=msg)
+            return rewrite('/dashboard')
         else:
             msg = 'Incorrect username / password !'
     return render_template('signin.html', msg=msg)
@@ -86,32 +101,40 @@ def accessbackend():
             print(pstmt)
             ibm_db.execute(pstmt)
             mg = 'You have successfully registered click signin!!'
-            return render_template("signin.html")
+            return render_template("signin.html", meg=mg)
 
     elif request.method == 'POST':
         msg = "fill out the form first!"
     return render_template("signup.html", meg=mg)
 
 
-@app.route('/additems', methods=['POST', 'GET'])
-def addItems():
-    return render_template("addItems.html")
+@app.route('/dashboard', methods=['POST', 'GET'])
+@login_required
+def dashBoard():
+    return render_template("dashboardContent.html")
 
 
-@app.route('/deleteitems', methods=['POST', 'GET'])
-def deleteItems():
-    return render_template("deleteItems.html")
+@app.route('/orders', methods=['POST', 'GET'])
+@login_required
+def orders():
+    return render_template("orders.html")
+
+
+@app.route('/suppliers', methods=['POST', 'GET'])
+def suppliers():
+    return render_template("suppliers.html")
+
+
+@app.route('/profile', methods=['POST', 'GET'])
+def profile():
+    return render_template("profile.html")
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
     print(request)
     resp = make_response(render_template("signin.html"))
-    session['loggedin'] = False
-    session['id'] = None
-    userid = None
-    session['username'] = None
-    resp.delete_cookie('session')
+    session.clear()
     return resp
 
 
