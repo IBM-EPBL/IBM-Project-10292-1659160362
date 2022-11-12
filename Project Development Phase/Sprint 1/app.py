@@ -1,6 +1,11 @@
 from flask import Flask, render_template, url_for, request, redirect, session, make_response
 import sqlite3 as sql
 from functools import wraps
+
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 import re
 import ibm_db
 conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=815fa4db-dc03-4c70-869a-a9cc13f33084.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;PORT=30367;SECURITY=SSL;SSLServerCertificate=DigiCertGlobalRootCA.crt;UID=gkx49901;PWD=kvWCsySl7vApfsy2", '', '')
@@ -101,6 +106,19 @@ def signup():
             print(pstmt)
             ibm_db.execute(pstmt)
             mg = 'You have successfully registered click login!'
+            # send mail
+
+            message = Mail(
+                from_email=os.environ.get('MAIL_DEFAULT_SENDER'),
+                to_emails='2019cs0134@svce.ac.in',
+                subject='New SignUp',
+                html_content='<p>Hello, Your Registration was successfull. <br><br> Thank you for choosing us.</p>')
+
+            sg = SendGridAPIClient(
+                api_key=os.environ.get('SENDGRID_API_KEY'))
+
+            response = sg.send(message)
+            print(response.status_code, response.body)
             return render_template("login.html", meg=mg)
 
     elif request.method == 'POST':
