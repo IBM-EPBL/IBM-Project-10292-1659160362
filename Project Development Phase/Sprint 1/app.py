@@ -1,4 +1,3 @@
-from __future__ import print_function
 from flask import Flask, render_template, url_for, request, redirect, session, make_response
 import sqlite3 as sql
 from functools import wraps
@@ -25,11 +24,12 @@ def login_required(f):
 
 
 @app.route('/')
-def signin():
-    return render_template('signin.html')
+def root():
+    return render_template('login.html')
 
 
 @app.route('/user/<id>')
+@login_required
 def user_info(id):
     with sql.connect('inventorymanagement.db') as con:
         con.row_factory = sql.Row
@@ -65,11 +65,11 @@ def login():
             return rewrite('/dashboard')
         else:
             msg = 'Incorrect username / password !'
-    return render_template('signin.html', msg=msg)
+    return render_template('login.html', msg=msg)
 
 
-@app.route('/accessbackend', methods=['POST', 'GET'])
-def accessbackend():
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
     mg = ''
     if request.method == "POST":
         username = request.form['username']
@@ -100,8 +100,8 @@ def accessbackend():
             ibm_db.bind_param(pstmt, 5, pw)
             print(pstmt)
             ibm_db.execute(pstmt)
-            mg = 'You have successfully registered click signin!!'
-            return render_template("signin.html", meg=mg)
+            mg = 'You have successfully registered click login!'
+            return render_template("login.html", meg=mg)
 
     elif request.method == 'POST':
         msg = "fill out the form first!"
@@ -111,7 +111,7 @@ def accessbackend():
 @app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashBoard():
-    return render_template("dashboardContent.html")
+    return render_template("dashboard.html")
 
 
 @app.route('/orders', methods=['POST', 'GET'])
@@ -121,19 +121,22 @@ def orders():
 
 
 @app.route('/suppliers', methods=['POST', 'GET'])
+@login_required
 def suppliers():
     return render_template("suppliers.html")
 
 
 @app.route('/profile', methods=['POST', 'GET'])
+@login_required
 def profile():
     return render_template("profile.html")
 
 
 @app.route('/logout', methods=['GET'])
+@login_required
 def logout():
     print(request)
-    resp = make_response(render_template("signin.html"))
+    resp = make_response(render_template("login.html"))
     session.clear()
     return resp
 
