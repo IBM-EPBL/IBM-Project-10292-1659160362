@@ -175,39 +175,6 @@ def addStocks():
             return redirect(url_for('dashBoard'))
 
 
-@app.route('/removeitems', methods=['POST'])
-@login_required
-def deleteItem():
-    if request.method == "POST":
-        print(request.form['item'])
-        try:
-            item = request.form['item']
-            quantity = request.form['quantity']
-            sql = 'SELECT * FROM stocks WHERE name= ?'
-            stmt = ibm_db.prepare(conn, sql)
-            ibm_db.bind_param(stmt, 1, item)
-            ibm_db.execute(stmt)
-            dictionary = ibm_db.fetch_assoc(stmt)
-            print(dictionary)
-            if (dictionary):
-                prevQuant = dictionary['QUANTITY']
-                curQuant = prevQuant - int(quantity)
-                total = curQuant * dictionary['PRICE_PER_QUANTITY']
-                print(type(prevQuant))
-                print(type(int(quantity)))
-                sql = 'UPDATE stocks SET QUANTITY=?,TOTAL_PRICE=? WHERE Name=?'
-                stmt = ibm_db.prepare(conn, sql)
-                ibm_db.bind_param(stmt, 1, curQuant)
-                ibm_db.bind_param(stmt, 2, total)
-                ibm_db.bind_param(stmt, 3, item)
-                ibm_db.execute(stmt)
-        except Exception as e:
-            msg = e
-
-        finally:
-            # print(msg)
-            return redirect(url_for('dashBoard'))
-
 
 @app.route('/updatestocks', methods=['POST'])
 @login_required
@@ -278,14 +245,84 @@ def suppliers():
     stmt = ibm_db.exec_immediate(conn, sql)
     dictionary = ibm_db.fetch_assoc(stmt)
     suppliers = []
+    orders_assigned = []
     headings = [*dictionary]
     while dictionary != False:
         suppliers.append(dictionary)
+        orders_assigned.append(dictionary['ORDER_ID'])
         dictionary = ibm_db.fetch_assoc(stmt)
 
-    return render_template("suppliers.html",headings=headings,data=suppliers)
+# get order ids from orders table and identify unassigned order ids
+    sql = "SELECT ID FROM orders"
+    stmt = ibm_db.exec_immediate(conn, sql)
+    dictionary = ibm_db.fetch_assoc(stmt)
+    order_ids = []
+    while dictionary != False:
+        order_ids.append(dictionary['ID'])
+        dictionary = ibm_db.fetch_assoc(stmt)
 
+    unassigned_order_ids = set(order_ids) - set(orders_assigned)
+    return render_template("suppliers.html",headings=headings,data=suppliers,order_ids=unassigned_order_ids)
 
+@app.route('/updatesupplier', methods=['POST'])
+@login_required
+def UpdateSupplier():
+    if request.method == "POST":
+        try:
+            item = request.form['name']
+            field = request.form['input-field']
+            value = request.form['input-value']
+            print(item, field, value)
+            insert_sql = 'UPDATE suppliers SET ' + field + "= ?" + " WHERE NAME=?"
+            print(insert_sql)
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, value)
+            ibm_db.bind_param(pstmt, 2, item)
+            ibm_db.execute(pstmt)
+        except Exception as e:
+            msg = e
+
+        finally:
+            return redirect(url_for('suppliers'))
+
+@app.route('/addsupplier', methods=['POST'])
+@login_required
+def addSupplier():
+    if request.method == "POST":
+        try:  
+            name = request.form['name']
+            order_id = request.form.get('order-id-select')
+            print(order_id)
+            print("Hello world")
+            location = request.form['location']
+            insert_sql = 'INSERT INTO suppliers (NAME,ORDER_ID,LOCATION) VALUES (?,?,?)'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, name)
+            ibm_db.bind_param(pstmt, 2, order_id)
+            ibm_db.bind_param(pstmt, 3, location)
+            ibm_db.execute(pstmt)
+
+        except Exception as e:
+            msg = e
+
+        finally:
+            return redirect(url_for('suppliers'))
+
+@app.route('/deletesupplier', methods=['POST'])
+@login_required
+def deleteSupplier():
+    if request.method == "POST":
+        try:
+            item = request.form['name']
+            insert_sql = 'DELETE FROM suppliers WHERE NAME=?'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, item)
+            ibm_db.execute(pstmt)
+        except Exception as e:
+            msg = e
+
+        finally:
+            return redirect(url_for('suppliers'))
 @app.route('/profile', methods=['POST', 'GET'])
 @login_required
 def profile():

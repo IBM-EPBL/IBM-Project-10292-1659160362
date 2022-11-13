@@ -8,17 +8,16 @@
 </p>
 {% include 'table.html' %}
 <div class="forms-wrapper">
-  <form action="{{url_for('UpdateStocks') }}" method="post">
+  <form action="{{url_for('UpdateSupplier') }}" method="post">
     <h3>Update Supplier</h3>
     <div class="field">
-      <label class="custom-label" for="item"> Enter Name</label>
+      <label class="custom-label" for="name"> Enter Name</label>
       <input class="text-inputs" type="text" name="name" placeholder="Supplier name" />
     </div>
     <div class="field">
       <label for="input-field">Choose a field :</label>
       <select name="input-field" id="field">
         <option value="NAME">NAME</option>
-        <option value="ORDER_ID">ORDER_ID</option>
         <option value="LOCATION">LOCATION</option>
       </select>
     </div>
@@ -34,34 +33,33 @@
     <button class="submit-button">Update</button>
   </form>
 
-  <form action="{{url_for('addStocks') }}" method="post">
-    <h3>Add New Stock</h3>
+  <form action="{{url_for('addSupplier') }}" method="post">
+    <h3>Add New Supplier</h3>
     <div class="field">
-      <label class="custom-label" for="item"> Enter the item</label>
-      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+      <label class="custom-label" for="name"> Enter the Supplier</label>
+      <input class="text-inputs" name="name" type="text" placeholder="Supplier name" />
     </div>
     <div class="field">
-      <label class="custom-label" for="quantity"> Enter quantity</label>
-      <input
-        class="text-inputs"
-        type="number"
-        name="quantity"
-        placeholder="200"
-      />
+      <label class="custom-label" for="quantity"> Enter Order ID : </label>
+      <select name="order-id-select" id="field">
+        {% for order_id in order_ids %}
+          <option value="{{ order_id }}">{{order_id}}</option>
+        {% endfor %}
+      </select>
     </div>
     <div class="field">
-      <label class="custom-label" for="price"> Enter price</label>
-      <input class="text-inputs" type="number" name="price" placeholder="25" />
+      <label class="custom-label" for="location"> Enter Location</label>
+      <input class="text-inputs" type="text" name="location" placeholder="Location" />
     </div>
     <button class="submit-button">Add Stock</button>
   </form>
-  <form action="{{url_for('deleteStocks') }}" method="post">
-    <h3>Remove stocks</h3>
+  <form action="{{url_for('deleteSupplier') }}" method="post">
+    <h3>Delete Supplier</h3>
     <div class="field">
-      <label class="custom-label" for="item"> Enter the item</label>
-      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+      <label class="custom-label" for="name"> Enter the name</label>
+      <input class="text-inputs" name="name" type="text" placeholder="Supplier Name" />
     </div>
-    <button class="submit-button red-button">Remove</button>
+    <button class="submit-button red-button">Delete</button>
   </form>
 </div>
 
