@@ -6,4 +6,63 @@
   Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
   tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 </p>
+{% include 'table.html' %}
+<div class="forms-wrapper">
+  <form action="{{url_for('UpdateStocks') }}" method="post">
+    <h3>Update Supplier</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter Name</label>
+      <input class="text-inputs" type="text" name="name" placeholder="Supplier name" />
+    </div>
+    <div class="field">
+      <label for="input-field">Choose a field :</label>
+      <select name="input-field" id="field">
+        <option value="NAME">NAME</option>
+        <option value="ORDER_ID">ORDER_ID</option>
+        <option value="LOCATION">LOCATION</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="custom-label" for="input-value"> Enter Value</label>
+      <input
+        class="text-inputs"
+        type="text"
+        name="input-value"
+        placeholder=" "
+      />
+    </div>
+    <button class="submit-button">Update</button>
+  </form>
+
+  <form action="{{url_for('addStocks') }}" method="post">
+    <h3>Add New Stock</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter the item</label>
+      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="quantity"> Enter quantity</label>
+      <input
+        class="text-inputs"
+        type="number"
+        name="quantity"
+        placeholder="200"
+      />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="price"> Enter price</label>
+      <input class="text-inputs" type="number" name="price" placeholder="25" />
+    </div>
+    <button class="submit-button">Add Stock</button>
+  </form>
+  <form action="{{url_for('deleteStocks') }}" method="post">
+    <h3>Remove stocks</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter the item</label>
+      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+    </div>
+    <button class="submit-button red-button">Remove</button>
+  </form>
+</div>
+
 {% endblock%}

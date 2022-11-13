@@ -274,7 +274,16 @@ def orders():
 @app.route('/suppliers', methods=['POST', 'GET'])
 @login_required
 def suppliers():
-    return render_template("suppliers.html")
+    sql = "SELECT * FROM suppliers"
+    stmt = ibm_db.exec_immediate(conn, sql)
+    dictionary = ibm_db.fetch_assoc(stmt)
+    suppliers = []
+    headings = [*dictionary]
+    while dictionary != False:
+        suppliers.append(dictionary)
+        dictionary = ibm_db.fetch_assoc(stmt)
+
+    return render_template("suppliers.html",headings=headings,data=suppliers)
 
 
 @app.route('/profile', methods=['POST', 'GET'])
