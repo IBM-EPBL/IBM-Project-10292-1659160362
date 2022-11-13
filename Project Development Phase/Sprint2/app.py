@@ -6,6 +6,8 @@ import ibm_db
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from datetime import datetime, timedelta
+
 conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=815fa4db-dc03-4c70-869a-a9cc13f33084.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;PORT=30367;SECURITY=SSL;SSLServerCertificate=DigiCertGlobalRootCA.crt;UID=gkx49901;PWD=kvWCsySl7vApfsy2", '', '')
 
 app = Flask(__name__)
@@ -268,7 +270,87 @@ def deleteStocks():
 @app.route('/orders', methods=['POST', 'GET'])
 @login_required
 def orders():
-    return render_template("orders.html")
+    query = "SELECT * FROM orders"
+    stmt = ibm_db.exec_immediate(conn, query)
+    dictionary = ibm_db.fetch_assoc(stmt)
+    orders = []
+    headings = [*dictionary]
+    while dictionary != False:
+        orders.append(dictionary)
+        dictionary = ibm_db.fetch_assoc(stmt)
+    return render_template("orders.html", headings=headings, data=orders)
+
+
+@app.route('/createOrder', methods=['POST'])
+@login_required
+def createOrder():
+    if request.method == "POST":
+        try:
+            stock_id = request.form['stock_id']
+            query = 'SELECT PRICE_PER_QUANTITY FROM stocks WHERE ID= ?'
+            stmt = ibm_db.prepare(conn, query)
+            ibm_db.bind_param(stmt, 1, stock_id)
+            ibm_db.execute(stmt)
+            dictionary = ibm_db.fetch_assoc(stmt)
+            if dictionary:
+                quantity = request.form['quantity']
+                date = str(datetime.now().year) + "-" + str(
+                    datetime.now().month) + "-" + str(datetime.now().day)
+                delivery = datetime.now() + timedelta(days=7)
+                delivery_date = str(delivery.year) + "-" + str(
+                    delivery.month) + "-" + str(delivery.day)
+                price = float(quantity) * \
+                    float(dictionary['PRICE_PER_QUANTITY'])
+                query = 'INSERT INTO orders (STOCKS_ID,QUANTITY,DATE,DELIVERY_DATE,PRICE) VALUES (?,?,?,?,?)'
+                pstmt = ibm_db.prepare(conn, query)
+                ibm_db.bind_param(pstmt, 1, stock_id)
+                ibm_db.bind_param(pstmt, 2, quantity)
+                ibm_db.bind_param(pstmt, 3, date)
+                ibm_db.bind_param(pstmt, 4, delivery_date)
+                ibm_db.bind_param(pstmt, 5, price)
+                ibm_db.execute(pstmt)
+        except Exception as e:
+            print(e)
+
+        finally:
+            return redirect(url_for('orders'))
+
+
+@app.route('/updateOrder', methods=['POST'])
+@login_required
+def updateOrder():
+    if request.method == "POST":
+        try:
+            item = request.form['item']
+            field = request.form['input-field']
+            value = request.form['input-value']
+            query = 'UPDATE orders SET ' + field + "= ?" + " WHERE ID=?"
+            pstmt = ibm_db.prepare(conn, query)
+            ibm_db.bind_param(pstmt, 1, value)
+            ibm_db.bind_param(pstmt, 2, item)
+            ibm_db.execute(pstmt)
+        except Exception as e:
+            print(e)
+
+        finally:
+            return redirect(url_for('orders'))
+
+
+@app.route('/cancelOrder', methods=['POST'])
+@login_required
+def cancelOrder():
+    if request.method == "POST":
+        try:
+            order_id = request.form['order_id']
+            query = 'DELETE FROM orders WHERE ID=?'
+            pstmt = ibm_db.prepare(conn, query)
+            ibm_db.bind_param(pstmt, 1, order_id)
+            ibm_db.execute(pstmt)
+        except Exception as e:
+            print(e)
+
+        finally:
+            return redirect(url_for('orders'))
 
 
 @app.route('/suppliers', methods=['POST', 'GET'])
