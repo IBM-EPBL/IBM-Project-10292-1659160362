@@ -136,16 +136,6 @@ def dashBoard():
         # print(f"The name is : ", dictionary["QUANTITY"])
         dictionary = ibm_db.fetch_assoc(stmt)
 
-    data = (
-        ("1", "lorem", "ipsum", "dolor"),
-        ("2", "lorem", "ipsum", "dolor"),
-        ("3", "lorem", "ipsum", "dolor"),
-        ("1", "lorem", "ipsum", "dolor"),
-        ("2", "lorem", "ipsum", "dolor"),
-        ("3", "lorem", "ipsum", "dolor"),
-    )
-    # print(stocks)
-
     return render_template("dashboard.html", headings=headings, data=stocks)
 
 
@@ -265,6 +255,56 @@ def deleteStocks():
             return redirect(url_for('dashBoard'))
 
 
+@app.route('/update-user', methods=['POST', 'GET'])
+@login_required
+def updateUser():
+    if request.method == "POST":
+        try:
+            email = session['id']
+            field = request.form['input-field']
+            value = request.form['input-value']
+            insert_sql = 'UPDATE users SET ' + field + '= ? WHERE EMAIL=?'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, value)
+            ibm_db.bind_param(pstmt, 2, email)
+            ibm_db.execute(pstmt)
+        except Exception as e:
+            msg = e
+
+        finally:
+            # print(msg)
+            return redirect(url_for('profile'))
+
+
+@app.route('/update-password', methods=['POST', 'GET'])
+@login_required
+def updatePassword():
+    if request.method == "POST":
+        try:
+            email = session['id']
+            password = request.form['prev-password']
+            curPassword = request.form['cur-password']
+            confirmPassword = request.form['confirm-password']
+            insert_sql = 'SELECT * FROM  users WHERE EMAIL=? AND PASSWORD=?'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, email)
+            ibm_db.bind_param(pstmt, 2, password)
+            ibm_db.execute(pstmt)
+            dictionary = ibm_db.fetch_assoc(pstmt)
+            print(dictionary)
+            if curPassword == confirmPassword:
+                insert_sql = 'UPDATE users SET PASSWORD=? WHERE EMAIL=?'
+                pstmt = ibm_db.prepare(conn, insert_sql)
+                ibm_db.bind_param(pstmt, 1, confirmPassword)
+                ibm_db.bind_param(pstmt, 2, email)
+                ibm_db.execute(pstmt)
+        except Exception as e:
+            msg = e
+        finally:
+            # print(msg)
+            return render_template('result.html')
+
+
 @app.route('/orders', methods=['POST', 'GET'])
 @login_required
 def orders():
@@ -280,7 +320,20 @@ def suppliers():
 @app.route('/profile', methods=['POST', 'GET'])
 @login_required
 def profile():
-    return render_template("profile.html")
+    if request.method == "GET":
+        try:
+            email = session['id']
+            insert_sql = 'SELECT * FROM users WHERE EMAIL=?'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, email)
+            ibm_db.execute(pstmt)
+            dictionary = ibm_db.fetch_assoc(pstmt)
+            print(dictionary)
+        except Exception as e:
+            msg = e
+        finally:
+            # print(msg)
+            return render_template("profile.html", data=dictionary)
 
 
 @app.route('/logout', methods=['GET'])

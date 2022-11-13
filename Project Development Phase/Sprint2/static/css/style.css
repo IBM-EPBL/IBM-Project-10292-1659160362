@@ -261,6 +261,15 @@ a.article:hover {
   border-radius: 8px;
   min-width: 100px;
 }
+.submit-button a {
+  color: white;
+}
+.mg-20 {
+  margin-top: 20px;
+}
+.user-deatils h4 {
+  font-size: 18px;
+}
 /* .field input[type='text']:focus {
   border-color: rgba(59, 67, 75, 0.687);
   box-shadow: 0 0 8px 0 rgba(80, 94, 108, 0.667);
