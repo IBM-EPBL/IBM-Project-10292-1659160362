@@ -37,7 +37,7 @@ def user_info(id):
     with sql.connect('inventorymanagement.db') as con:
         con.row_factory = sql.Row
         cur = con.cursor()
-        cur.execute(f'SELECT * FROM register WHERE email="{id}"')
+        cur.execute(f'SELECT * FROM users WHERE email="{id}"')
         user = cur.fetchall()
     return render_template("user_info.html", user=user[0])
 
@@ -51,7 +51,7 @@ def login():
         un = request.form['username']
         pd = request.form['password_1']
         print(un, pd)
-        sql = "SELECT * FROM register WHERE email =? AND password=?"
+        sql = "SELECT * FROM users WHERE email =? AND password=?"
         stmt = ibm_db.prepare(conn, sql)
         ibm_db.bind_param(stmt, 1, un)
         ibm_db.bind_param(stmt, 2, pd)
@@ -78,7 +78,7 @@ def signup():
         username = request.form['username']
         email = request.form['email']
         pw = request.form['password']
-        sql = 'SELECT * FROM register WHERE email =?'
+        sql = 'SELECT * FROM users WHERE email =?'
         stmt = ibm_db.prepare(conn, sql)
         ibm_db.bind_param(stmt, 1, email)
         ibm_db.execute(stmt)
@@ -93,7 +93,7 @@ def signup():
         elif not re.match(r'[A-Za-z0-9]+', username):
             ms = 'name must contain only character and number'
         else:
-            insert_sql = 'INSERT INTO register (USERNAME,FIRSTNAME,LASTNAME,EMAIL,PASSWORD) VALUES (?,?,?,?,?)'
+            insert_sql = 'INSERT INTO users (USERNAME,FIRSTNAME,LASTNAME,EMAIL,PASSWORD) VALUES (?,?,?,?,?)'
             pstmt = ibm_db.prepare(conn, insert_sql)
             ibm_db.bind_param(pstmt, 1, username)
             ibm_db.bind_param(pstmt, 2, "firstname")
@@ -149,32 +149,23 @@ def dashBoard():
     return render_template("dashboard.html", headings=headings, data=stocks)
 
 
-@app.route('/additems', methods=['POST'])
+@app.route('/addstocks', methods=['POST'])
 @login_required
-def addItem():
+def addStocks():
     if request.method == "POST":
         print(request.form['item'])
         try:
             item = request.form['item']
             quantity = request.form['quantity']
-            sql = 'SELECT * FROM stocks WHERE name= ?'
-            stmt = ibm_db.prepare(conn, sql)
-            ibm_db.bind_param(stmt, 1, item)
-            ibm_db.execute(stmt)
-            dictionary = ibm_db.fetch_assoc(stmt)
-            print(dictionary)
-            if (dictionary):
-                prevQuant = dictionary['QUANTITY']
-                curQuant = prevQuant + int(quantity)
-                total = curQuant * dictionary['PRICE_PER_QUANTITY']
-                print(type(prevQuant))
-                print(type(int(quantity)))
-                sql = 'UPDATE stocks SET QUANTITY=?,TOTAL_PRICE=? WHERE Name=?'
-                stmt = ibm_db.prepare(conn, sql)
-                ibm_db.bind_param(stmt, 1, curQuant)
-                ibm_db.bind_param(stmt, 2, total)
-                ibm_db.bind_param(stmt, 3, item)
-                ibm_db.execute(stmt)
+            price = request.form['price']
+            total = int(price) * int(quantity)
+            insert_sql = 'INSERT INTO stocks (NAME,QUANTITY,PRICE_PER_QUANTITY,TOTAL_PRICE) VALUES (?,?,?,?)'
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, item)
+            ibm_db.bind_param(pstmt, 2, quantity)
+            ibm_db.bind_param(pstmt, 3, price)
+            ibm_db.bind_param(pstmt, 4, total)
+            ibm_db.execute(pstmt)
 
         except Exception as e:
             msg = e
@@ -218,25 +209,53 @@ def deleteItem():
             return redirect(url_for('dashBoard'))
 
 
-@app.route('/addstocks', methods=['POST'])
+@app.route('/updatestocks', methods=['POST'])
 @login_required
-def addStocks():
+def UpdateStocks():
+    if request.method == "POST":
+        try:
+            item = request.form['item']
+            print("hello")
+            field = request.form['input-field']
+            value = request.form['input-value']
+            print(item, field, value)
+            insert_sql = 'UPDATE stocks SET ' + field + "= ?" + " WHERE NAME=?"
+            print(insert_sql)
+            pstmt = ibm_db.prepare(conn, insert_sql)
+            ibm_db.bind_param(pstmt, 1, value)
+            ibm_db.bind_param(pstmt, 2, item)
+            ibm_db.execute(pstmt)
+            if field == 'PRICE_PER_QUANTITY' or field == 'QUANTITY':
+                insert_sql = 'SELECT * FROM stocks WHERE NAME= ?'
+                pstmt = ibm_db.prepare(conn, insert_sql)
+                ibm_db.bind_param(pstmt, 1, item)
+                ibm_db.execute(pstmt)
+                dictonary = ibm_db.fetch_assoc(pstmt)
+                print(dictonary)
+                total = dictonary['QUANTITY'] * dictonary['PRICE_PER_QUANTITY']
+                insert_sql = 'UPDATE stocks SET TOTAL_PRICE=? WHERE NAME=?'
+                pstmt = ibm_db.prepare(conn, insert_sql)
+                ibm_db.bind_param(pstmt, 1, total)
+                ibm_db.bind_param(pstmt, 2, item)
+                ibm_db.execute(pstmt)
+        except Exception as e:
+            msg = e
+
+        finally:
+            # print(msg)
+            return redirect(url_for('dashBoard'))
+
+
+@app.route('/deletestocks', methods=['POST'])
+@login_required
+def deleteStocks():
     if request.method == "POST":
         print(request.form['item'])
         try:
             item = request.form['item']
-            quantity = request.form['quantity']
-            price = request.form['price']
-            total = int(quantity) * int(price)
-            ID = 10
-            insert_sql = 'INSERT INTO stocks (ID,NAME,QUANTITY,PRICE_PER_QUANTITY,TOTAL_PRICE) VALUES (?,?,?,?,?)'
+            insert_sql = 'DELETE FROM stocks WHERE NAME=?'
             pstmt = ibm_db.prepare(conn, insert_sql)
-            ibm_db.bind_param(pstmt, 1, ID)
-            ibm_db.bind_param(pstmt, 2, item)
-            ibm_db.bind_param(pstmt, 3, int(quantity))
-            ibm_db.bind_param(pstmt, 4, price)
-            ibm_db.bind_param(pstmt, 5, total)
-            print(pstmt)
+            ibm_db.bind_param(pstmt, 1, item)
             ibm_db.execute(pstmt)
         except Exception as e:
             msg = e
@@ -275,3 +294,5 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# ALTER TABLE stocks ALTER COLUMN ID SET GENERATED BY DEFAULT AS IDENTITY

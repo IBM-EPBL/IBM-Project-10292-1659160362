@@ -259,7 +259,7 @@ a.article:hover {
   background-color: rgb(41, 115, 41);
   border: none;
   border-radius: 8px;
-  width: 100px;
+  min-width: 100px;
 }
 /* .field input[type='text']:focus {
   border-color: rgba(59, 67, 75, 0.687);
@@ -344,7 +344,7 @@ a.article:hover {
 
 .forms-wrapper {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   justify-content: space-around;
 }
 
