@@ -1,0 +1,4 @@
+flask
+sendgrid
+sqlite3
+ibm_db
