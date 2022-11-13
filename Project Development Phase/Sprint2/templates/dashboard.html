@@ -1,0 +1,68 @@
+{% extends 'base2.html '%} {% block head %}
+<title>Dashboard</title>
+{% endblock%} {%block body%}
+<h2>Dashboard</h2>
+<p>
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+</p>
+{% include 'table.html' %}
+<div class="forms-wrapper">
+  <form action="{{url_for('addItem') }}" method="post">
+    <h3>Add items</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter the item</label>
+      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="quantity"> Enter quantity</label>
+      <input
+        class="text-inputs"
+        type="number"
+        name="quantity"
+        placeholder="200"
+      />
+    </div>
+    <button class="submit-button">Add</button>
+  </form>
+  <form action="{{url_for('deleteItem') }}" method="post">
+    <h3>Remove items</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter the item</label>
+      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="quantity"> Enter quantity</label>
+      <input
+        class="text-inputs"
+        type="number"
+        name="quantity"
+        placeholder="200"
+      />
+    </div>
+    <button class="submit-button red-button">Remove</button>
+  </form>
+  <form action="{{url_for('addStocks') }}" method="post">
+    <h3>Add New Stock</h3>
+    <div class="field">
+      <label class="custom-label" for="item"> Enter the item</label>
+      <input class="text-inputs" name="item" type="text" placeholder="juice" />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="quantity"> Enter quantity</label>
+      <input
+        class="text-inputs"
+        type="number"
+        name="quantity"
+        placeholder="200"
+      />
+    </div>
+    <div class="field">
+      <label class="custom-label" for="price"> Enter price</label>
+      <input class="text-inputs" type="number" name="price" placeholder="25" />
+    </div>
+    <button class="submit-button red-button">Add Stock</button>
+  </form>
+</div>
+
+{% endblock%}
