@@ -167,7 +167,6 @@ def addStocks():
             return redirect(url_for('dashBoard'))
 
 
-
 @app.route('/updatestocks', methods=['POST'])
 @login_required
 def UpdateStocks():
@@ -384,7 +383,8 @@ def suppliers():
         dictionary = ibm_db.fetch_assoc(stmt)
 
     unassigned_order_ids = set(order_ids) - set(orders_assigned)
-    return render_template("suppliers.html",headings=headings,data=suppliers,order_ids=unassigned_order_ids)
+    return render_template("suppliers.html", headings=headings, data=suppliers, order_ids=unassigned_order_ids)
+
 
 @app.route('/updatesupplier', methods=['POST'])
 @login_required
@@ -407,11 +407,12 @@ def UpdateSupplier():
         finally:
             return redirect(url_for('suppliers'))
 
+
 @app.route('/addsupplier', methods=['POST'])
 @login_required
 def addSupplier():
     if request.method == "POST":
-        try:  
+        try:
             name = request.form['name']
             order_id = request.form.get('order-id-select')
             print(order_id)
@@ -430,6 +431,7 @@ def addSupplier():
         finally:
             return redirect(url_for('suppliers'))
 
+
 @app.route('/deletesupplier', methods=['POST'])
 @login_required
 def deleteSupplier():
@@ -445,6 +447,8 @@ def deleteSupplier():
 
         finally:
             return redirect(url_for('suppliers'))
+
+
 @app.route('/profile', methods=['POST', 'GET'])
 @login_required
 def profile():
