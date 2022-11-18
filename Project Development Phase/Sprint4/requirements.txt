@@ -1,4 +1,5 @@
 flask
 sendgrid
-sqlite3
 ibm_db
+python-dotenv
+Jinja2
